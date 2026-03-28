@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHEAR.AI — Style Before You Cut</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--black:#080810;--surface:#0e0e1a;--surface2:#141425;--border:rgba(255,255,255,0.08);--gold:#d4a853;--gold2:#f0c87a;--text:#e8e0d5;--muted:rgba(232,224,213,0.45);--accent:#c8824a;--radius:12px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden;cursor:none;}
+#cur{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:exclusion;transition:width .2s,height .2s;}
+#cur-ring{position:fixed;width:38px;height:38px;border-radius:50%;border:1px solid var(--gold);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .2s,height .2s;opacity:.55;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.3rem 4rem;background:rgba(8,8,16,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;letter-spacing:.08em;color:var(--gold);text-decoration:none;}
+.logo span{color:var(--text);}
+.nav-links{display:flex;gap:2.5rem;list-style:none;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;transition:color .2s;}
+.nav-links a:hover{color:var(--gold);}
+.nav-cta{background:var(--gold);color:var(--black);padding:.6rem 1.5rem;border-radius:2px;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border:none;transition:background .2s,transform .15s;cursor:none;}
+.nav-cta:hover{background:var(--gold2);transform:translateY(-1px);}
+section{padding:6rem 4rem;position:relative;}
+.section-tag{display:inline-block;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;padding-left:1.5rem;position:relative;}
+.section-tag::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:20px;height:1px;background:var(--gold);}
+.section-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2rem,4vw,3.2rem);line-height:1.08;letter-spacing:-.02em;margin-bottom:1rem;}
+.section-desc{color:var(--muted);max-width:520px;font-size:1rem;line-height:1.7;}
+.hero{min-height:100vh;display:flex;align-items:center;padding:8rem 4rem 4rem;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 70% 50%,rgba(212,168,83,.07) 0%,transparent 70%);}
+.hero-content{position:relative;z-index:2;max-width:680px;}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.2);padding:.4rem 1rem;border-radius:100px;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:2.5rem;animation:fadeUp .8s ease both;}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3rem,6vw,5.5rem);line-height:1.02;letter-spacing:-.02em;margin-bottom:1.5rem;animation:fadeUp .8s .15s ease both;}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{font-size:1.1rem;line-height:1.7;color:var(--muted);max-width:480px;margin-bottom:2.8rem;animation:fadeUp .8s .3s ease both;}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;animation:fadeUp .8s .45s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.btn-primary{background:var(--gold);color:var(--black);padding:.9rem 2.2rem;border-radius:2px;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;border:none;transition:background .2s,transform .15s,box-shadow .2s;text-decoration:none;display:inline-block;cursor:none;}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 40px rgba(212,168,83,.3);}
+.btn-secondary{background:transparent;color:var(--text);padding:.9rem 2.2rem;border-radius:2px;font-family:'Syne',sans-serif;font-weight:600;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--border);transition:border-color .2s,transform .15s,color .2s;text-decoration:none;display:inline-block;cursor:none;}
+.btn-secondary:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-2px);}
+.stats-bar{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.8rem 4rem;display:flex;justify-content:center;gap:6rem;}
+.stat-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold);display:block;}
+.stat-label{font-size:.75rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:.2rem;}
+.how{background:var(--surface);}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:4rem;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.how-step{background:var(--black);padding:3rem 2.5rem;transition:background .3s;}
+.how-step:hover{background:var(--surface2);}
+.step-num{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;color:rgba(212,168,83,.1);line-height:1;margin-bottom:1.5rem;}
+.step-icon{width:48px;height:48px;border-radius:10px;background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1.5rem;}
+.step-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:.8rem;}
+.step-desc{color:var(--muted);font-size:.9rem;line-height:1.65;}
+
+/* ====== STUDIO ====== */
+.studio{background:var(--surface);}
+.studio-wrap{margin-top:4rem;display:grid;grid-template-columns:260px 1fr 280px;min-height:600px;background:var(--black);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.5);}
+.s-sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.4rem;display:flex;flex-direction:column;gap:.3rem;overflow-y:auto;}
+.s-lbl{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.5rem .4rem .2rem;margin-top:.5rem;}
+.style-btn{display:flex;align-items:center;gap:.7rem;padding:.55rem .8rem;border-radius:8px;background:none;border:1px solid transparent;color:var(--text);font-size:.82rem;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;text-align:left;cursor:none;}
+.style-btn:hover{background:var(--surface2);}
+.style-btn.active{background:rgba(212,168,83,.1);border-color:rgba(212,168,83,.25);color:var(--gold);}
+.s-ico{width:28px;height:28px;border-radius:5px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.s-main{position:relative;background:#080810;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:1.5rem;gap:1rem;overflow:hidden;}
+.canvas-wrap{position:relative;width:100%;max-width:360px;aspect-ratio:3/4;background:#111120;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+#photoCanvas{position:absolute;inset:0;width:100%;height:100%;}
+#overlayCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.ph-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;color:var(--muted);font-size:.9rem;text-align:center;padding:2rem;pointer-events:none;}
+.ph-placeholder .big{font-size:3rem;opacity:.4;}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);box-shadow:0 0 12px var(--gold);animation:scan 3s ease-in-out infinite;opacity:.7;display:none;}
+@keyframes scan{0%,100%{top:0%;opacity:0;}10%{opacity:1;}90%{opacity:1;}99%{top:100%;opacity:0;}}
+.cam-controls{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;justify-content:center;}
+.cc{width:44px;height:44px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.05rem;transition:border-color .2s;cursor:none;}
+.cc:hover{border-color:var(--gold);}
+.cc.main-btn{width:54px;height:54px;background:var(--gold);border:none;font-size:1.2rem;color:var(--black);}
+.upload-lbl{background:rgba(212,168,83,.1);border:1px dashed rgba(212,168,83,.4);color:var(--gold);padding:.5rem 1.2rem;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;cursor:none;transition:background .2s;}
+.upload-lbl:hover{background:rgba(212,168,83,.18);}
+#fileInput{display:none;}
+.ai-tip-bar{background:var(--surface);border:1px solid rgba(212,168,83,.18);border-radius:8px;padding:.6rem 1rem;font-size:.78rem;color:var(--muted);text-align:center;max-width:360px;width:100%;}
+.ai-tip-bar strong{color:var(--gold);}
+/* BA view */
+.ba-container{position:relative;width:100%;max-width:360px;aspect-ratio:3/4;border-radius:10px;overflow:hidden;border:1px solid var(--border);display:none;}
+.ba-container.show{display:block;}
+#baCanvas{display:block;width:100%;height:100%;}
+.ba-handle{position:absolute;top:0;bottom:0;width:3px;background:var(--gold);transform:translateX(-50%);z-index:5;cursor:ew-resize;}
+.ba-handle::after{content:'⟺';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:var(--black);font-size:.7rem;line-height:30px;text-align:center;}
+.ba-lbl{position:absolute;bottom:.7rem;background:rgba(8,8,16,.75);padding:.2rem .6rem;border-radius:4px;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;}
+/* Right panel */
+.s-right{background:var(--surface);border-left:1px solid var(--border);padding:1.4rem;display:flex;flex-direction:column;gap:1.1rem;overflow-y:auto;}
+.r-lbl{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;}
+.color-row{display:flex;gap:.45rem;flex-wrap:wrap;}
+.csw{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:none;transition:transform .2s,border-color .2s;}
+.csw:hover{transform:scale(1.2);}
+.csw.active{border-color:#fff;transform:scale(1.1);}
+.int-row{display:flex;align-items:center;gap:.7rem;font-size:.78rem;color:var(--muted);}
+.int-row input[type=range]{flex:1;accent-color:var(--gold);}
+.fx-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;}
+.fx-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.45rem;font-size:.72rem;text-align:center;transition:all .2s;color:var(--text);cursor:none;}
+.fx-btn:hover,.fx-btn.active{background:rgba(212,168,83,.1);border-color:rgba(212,168,83,.3);color:var(--gold);}
+.ss-row{display:flex;gap:.5rem;}
+.ss-btn{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.5rem;font-size:.72rem;text-align:center;transition:all .2s;color:var(--muted);cursor:none;}
+.ss-btn:hover{border-color:rgba(212,168,83,.3);color:var(--gold);}
+.book-box{background:rgba(212,168,83,.06);border:1px solid rgba(212,168,83,.15);border-radius:10px;padding:1.1rem;margin-top:auto;}
+.book-box-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:.4rem;}
+.book-box-desc{font-size:.76rem;color:var(--muted);line-height:1.5;margin-bottom:.9rem;}
+.book-box-btn{width:100%;background:var(--gold);color:var(--black);border:none;padding:.65rem;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;cursor:none;transition:background .2s;}
+.book-box-btn:hover{background:var(--gold2);}
+
+/* Gallery */
+.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:4rem;}
+.g-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:transform .25s,border-color .25s;cursor:none;}
+.g-card:hover{transform:translateY(-4px);border-color:rgba(212,168,83,.25);}
+.g-thumb{aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;}
+.g-tag{position:absolute;top:.6rem;right:.6rem;background:rgba(212,168,83,.15);border:1px solid rgba(212,168,83,.2);color:var(--gold);font-size:.63rem;letter-spacing:.07em;text-transform:uppercase;padding:.2rem .5rem;border-radius:4px;}
+.g-info{padding:.9rem 1rem;border-top:1px solid var(--border);}
+.g-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:.2rem;}
+.g-meta{font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+.g-try{background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.2);color:var(--gold);padding:.2rem .5rem;border-radius:4px;font-size:.63rem;letter-spacing:.06em;text-transform:uppercase;cursor:none;transition:background .2s;}
+.g-try:hover{background:rgba(212,168,83,.2);}
+
+/* Booking */
+.booking{background:var(--surface);}
+.booking-grid{display:grid;grid-template-columns:1fr 380px;gap:4rem;margin-top:4rem;align-items:start;}
+.stylist-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;}
+.stylist-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;text-align:center;transition:all .2s;cursor:none;}
+.stylist-card:hover,.stylist-card.active{border-color:rgba(212,168,83,.3);transform:translateY(-2px);}
+.sav{width:52px;height:52px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.7rem;margin:0 auto .7rem;border:2px solid rgba(212,168,83,.2);}
+.s-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;}
+.s-spec{font-size:.72rem;color:var(--muted);margin-top:.2rem;}
+.s-rating{font-size:.7rem;color:var(--gold);margin-top:.4rem;}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:2rem;}
+.slot{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.5rem;text-align:center;font-size:.78rem;transition:all .2s;cursor:none;}
+.slot:hover,.slot.active{background:rgba(212,168,83,.08);border-color:rgba(212,168,83,.3);color:var(--gold);}
+.slot.taken{opacity:.35;pointer-events:none;}
+.bsummary{background:var(--black);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;position:sticky;top:6rem;}
+.bs-t{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.bs-r{display:flex;justify-content:space-between;font-size:.85rem;padding:.55rem 0;}
+.bs-lbl{color:var(--muted);}
+.bs-total{border-top:1px solid var(--border);padding-top:1rem;margin-top:.5rem;font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;}
+.bs-price{color:var(--gold);}
+.confirm-btn{width:100%;background:var(--gold);color:var(--black);border:none;padding:1rem;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;margin-top:1.5rem;transition:background .2s,transform .15s;cursor:none;}
+.confirm-btn:hover{background:var(--gold2);transform:translateY(-2px);}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:4rem;}
+.t-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;transition:all .25s;}
+.t-card:hover{border-color:rgba(212,168,83,.2);transform:translateY(-3px);}
+.t-stars{color:var(--gold);margin-bottom:1rem;}
+.t-text{font-size:.92rem;line-height:1.7;color:var(--muted);font-style:italic;margin-bottom:1.5rem;}
+.t-author{display:flex;align-items:center;gap:.8rem;}
+.t-avatar{width:36px;height:36px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1rem;border:1px solid var(--border);}
+.t-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;}
+.t-meta{font-size:.72rem;color:var(--muted);}
+.cta-sec{text-align:center;padding:8rem 4rem;overflow:hidden;}
+.cta-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 70% at 50% 50%,rgba(212,168,83,.08),transparent 70%);}
+
+/* Deploy Modal */
+.modal-ov{position:fixed;inset:0;background:rgba(8,8,16,.95);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-ov.open{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;max-width:540px;width:92%;position:relative;transform:translateY(30px) scale(.97);transition:transform .3s;max-height:88vh;overflow-y:auto;}
+.modal-ov.open .modal{transform:none;}
+.m-close{position:absolute;top:1rem;right:1rem;width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--muted);cursor:none;transition:color .2s;}
+.m-close:hover{color:var(--text);}
+.m-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;margin-bottom:.5rem;}
+.m-sub{color:var(--muted);font-size:.88rem;margin-bottom:1.5rem;line-height:1.6;}
+.d-step{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:.9rem;}
+.d-step-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.6rem;}
+.d-num{width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--black);font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.d-step p{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:.5rem;}
+.code{background:var(--black);border:1px solid var(--border);border-radius:6px;padding:.65rem 1rem;font-family:monospace;font-size:.76rem;color:var(--gold2);margin:.35rem 0;word-break:break-all;line-height:1.6;}
+.d-link{color:var(--gold);text-decoration:underline;font-size:.81rem;}
+
+/* Toast */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--surface);border:1px solid rgba(212,168,83,.3);border-radius:10px;padding:.85rem 1.3rem;font-size:.85rem;z-index:300;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none;max-width:300px;}
+.toast.show{transform:none;opacity:1;}
+
+/* Reveal */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s;}
+.reveal.in-view{opacity:1;transform:none;}
+
+footer{background:var(--surface);border-top:1px solid var(--border);padding:2.5rem 4rem;display:flex;justify-content:space-between;align-items:center;}
+.f-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);}
+.f-logo span{color:var(--text);}
+.f-links{display:flex;gap:2rem;}
+.f-links a{color:var(--muted);text-decoration:none;font-size:.82rem;transition:color .2s;}
+.f-links a:hover{color:var(--gold);}
+.f-copy{font-size:.78rem;color:var(--muted);}
+@media(max-width:1100px){
+  nav{padding:1.2rem 2rem;}.nav-links{display:none;}
+  section{padding:4rem 2rem;}
+  .stats-bar{gap:2rem;padding:1.5rem 2rem;flex-wrap:wrap;}
+  .studio-wrap{grid-template-columns:1fr;}.s-sidebar{display:none;}.s-right{display:none;}
+  .gallery-grid{grid-template-columns:repeat(2,1fr);}
+  .booking-grid{grid-template-columns:1fr;}
+  .how-grid{grid-template-columns:1fr;}
+  .testi-grid{grid-template-columns:1fr;}
+  footer{flex-direction:column;gap:1.5rem;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div><div id="cur-ring"></div>
+
+<!-- DEPLOY MODAL -->
+<div class="modal-ov" id="deployModal">
+  <div class="modal">
+    <div class="m-close" id="dClose">✕</div>
+    <div class="m-title">🚀 Deploy Your Website</div>
+    <div class="m-sub">This is a single HTML file — no server, no coding needed. Pick any method below to go live in minutes.</div>
+    <div class="d-step">
+      <div class="d-step-title"><div class="d-num">1</div>Download this file first</div>
+      <p>Click the download/save button in Claude to save <strong>salon-ai.html</strong> to your computer.</p>
+    </div>
+    <div class="d-step">
+      <div class="d-step-title"><div class="d-num">2</div>⚡ Netlify Drop — Easiest (Free, No Account)</div>
+      <p>Drag and drop your HTML file — your site is live instantly.</p>
+      <div class="code">1. Visit: app.netlify.com/drop<br>2. Drag your salon-ai.html onto the page<br>3. ✅ Live at yoursite.netlify.app in 10 seconds</div>
+      <a href="https://app.netlify.com/drop" target="_blank" class="d-link">Open Netlify Drop →</a>
+    </div>
+    <div class="d-step">
+      <div class="d-step-title"><div class="d-num">3</div>🌐 Vercel — Best (Free + Custom Domain)</div>
+      <p>Best for a permanent site. Use their website (no coding needed):</p>
+      <div class="code">1. Go to: vercel.com → Sign Up (free)<br>2. Click "Add New → Project"<br>3. Upload your salon-ai.html<br>4. ✅ Live at your-project.vercel.app</div>
+      <p>Or via terminal: <span style="color:var(--gold2);font-family:monospace;">npx vercel --name shear-ai</span></p>
+    </div>
+    <div class="d-step">
+      <div class="d-step-title"><div class="d-num">4</div>📄 GitHub Pages (Free)</div>
+      <p>Rename file to <span style="color:var(--gold2);font-family:monospace;">index.html</span>, create a GitHub repo, then:</p>
+      <div class="code">Settings → Pages → Source: main branch → Save<br>✅ Live at username.github.io/repo-name</div>
+    </div>
+    <div class="d-step">
+      <div class="d-step-title"><div class="d-num">5</div>🔥 Add Real AI (Next Level)</div>
+      <p>To add real face detection and AI hair rendering:</p>
+      <div class="code">• Face detection: face-api.js (free, runs in browser)<br>• Hair segmentation: MediaPipe (Google, free)<br>• AI renders: Replicate.com API (Stable Diffusion)<br>• Booking backend: Supabase (free tier)<br>• Payments: Razorpay or Stripe</div>
+    </div>
+    <div class="d-step">
+      <div class="d-step-title"><div class="d-num">6</div>🌏 Custom Domain (Optional)</div>
+      <div class="code">Buy domain: GoDaddy / Namecheap (~₹800/year)<br>Point DNS to Netlify/Vercel → done in 10 mins</div>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:.5rem;border:none;" onclick="window.open('https://app.netlify.com/drop','_blank')">Open Netlify Drop →</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">SHEAR<span>.AI</span></a>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#studio">Try-On Studio</a></li>
+    <li><a href="#gallery">Styles</a></li>
+    <li><a href="#booking">Book</a></li>
+  </ul>
+  <div style="display:flex;gap:.8rem;align-items:center;">
+    <button class="btn-secondary" style="padding:.5rem 1rem;font-size:.75rem;border:1px solid var(--border);" onclick="openDeploy()">🚀 How to Deploy</button>
+    <button class="nav-cta" onclick="goTo('#studio')">Try Free →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><div class="bdot"></div>AI-Powered Style Preview</div>
+    <h1>See Your <em>New Look</em><br>Before the Cut</h1>
+    <p>Upload your photo and try any hairstyle, color, or beard style instantly. Powered by real-time AI face analysis. Book with confidence — not guesswork.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="goTo('#studio')">🪄 Try a Style Now</button>
+      <a href="#gallery" class="btn-secondary">Browse Styles</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar reveal">
+  <div class="stat"><span class="stat-num" data-target="50000">0</span><span class="stat-label">Styles Previewed</span></div>
+  <div class="stat"><span class="stat-num" data-target="98">0</span><span class="stat-label">% Satisfaction</span></div>
+  <div class="stat"><span class="stat-num" data-target="60">0</span><span class="stat-label">% Fewer Cancellations</span></div>
+  <div class="stat"><span class="stat-num" data-target="240">0</span><span class="stat-label">Expert Stylists</span></div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="section-tag">Process</div>
+  <div class="section-title">Three Steps to<br>Your Perfect Look</div>
+  <p class="section-desc">Our AI handles the hard part — you just enjoy the transformation.</p>
+  <div class="how-grid reveal">
+    <div class="how-step"><div class="step-num">01</div><div class="step-icon">📸</div><div class="step-title">Upload Your Photo</div><div class="step-desc">Take a live selfie or upload any photo. Our AI instantly maps your face shape, jawline, and hairline for accurate previewing.</div></div>
+    <div class="how-step"><div class="step-num">02</div><div class="step-icon">✨</div><div class="step-title">Pick & Preview Styles</div><div class="step-desc">Choose from cuts, colors, and beard styles. Compare before & after with a draggable slider. Adjust intensity and effects.</div></div>
+    <div class="how-step"><div class="step-num">03</div><div class="step-icon">📅</div><div class="step-title">Book with Confidence</div><div class="step-desc">Found the perfect look? Book instantly and send your preview to your stylist — zero miscommunication guaranteed.</div></div>
+  </div>
+</section>
+
+<!-- TRY-ON STUDIO -->
+<section class="studio" id="studio">
+  <div class="section-tag">Try-On Studio</div>
+  <div class="section-title">Your Personal Style Studio</div>
+  <p class="section-desc">Upload your photo or open your camera — try any look in seconds.</p>
+  <div class="studio-wrap reveal">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="s-sidebar">
+      <div class="s-lbl">Men's Cuts</div>
+      <button class="style-btn active" data-style="fade" onclick="applyStyle(this)"><div class="s-ico">💈</div>High Fade</button>
+      <button class="style-btn" data-style="quiff" onclick="applyStyle(this)"><div class="s-ico">⚡</div>Textured Quiff</button>
+      <button class="style-btn" data-style="buzz" onclick="applyStyle(this)"><div class="s-ico">🪒</div>Buzz Cut</button>
+      <button class="style-btn" data-style="undercut" onclick="applyStyle(this)"><div class="s-ico">✂️</div>Undercut</button>
+      <button class="style-btn" data-style="pompadour" onclick="applyStyle(this)"><div class="s-ico">🎩</div>Pompadour</button>
+      <div class="s-lbl">Women's Cuts</div>
+      <button class="style-btn" data-style="bob" onclick="applyStyle(this)"><div class="s-ico">📐</div>Bob Cut</button>
+      <button class="style-btn" data-style="waves" onclick="applyStyle(this)"><div class="s-ico">🌊</div>Beach Waves</button>
+      <button class="style-btn" data-style="pixie" onclick="applyStyle(this)"><div class="s-ico">🌸</div>Pixie Cut</button>
+      <button class="style-btn" data-style="layered" onclick="applyStyle(this)"><div class="s-ico">🌿</div>Layered Long</button>
+      <div class="s-lbl">Beard</div>
+      <button class="style-btn" data-beard="full" onclick="applyBeard(this)"><div class="s-ico">🧔</div>Full Beard</button>
+      <button class="style-btn" data-beard="stubble" onclick="applyBeard(this)"><div class="s-ico">🪒</div>Stubble</button>
+      <button class="style-btn" data-beard="none" onclick="applyBeard(this)"><div class="s-ico">😊</div>Clean Shave</button>
+    </div>
+
+    <!-- CENTER CANVAS -->
+    <div class="s-main">
+      <!-- Normal canvas view -->
+      <div class="canvas-wrap" id="normalView">
+        <canvas id="photoCanvas"></canvas>
+        <canvas id="overlayCanvas"></canvas>
+        <div class="ph-placeholder" id="placeholder">
+          <div class="big">📸</div>
+          <div style="font-weight:500;color:var(--text);font-size:.95rem;">Try On a Hairstyle</div>
+          <div>Upload your photo or use your camera — then select any style from the left panel</div>
+          <div style="font-size:.78rem;margin-top:.5rem;color:rgba(232,224,213,.3);">Drag & drop also works ↓</div>
+        </div>
+        <div class="scan-line" id="scanLine"></div>
+      </div>
+
+      <!-- Before/After canvas view -->
+      <div class="ba-container" id="baView">
+        <canvas id="baCanvas"></canvas>
+        <div class="ba-handle" id="baHandle" style="left:50%;"></div>
+        <div class="ba-lbl" style="left:.7rem;color:var(--muted);">Before</div>
+        <div class="ba-lbl" style="right:.7rem;color:var(--gold);">After</div>
+      </div>
+
+      <!-- Controls row -->
+      <div class="cam-controls">
+        <button class="cc" title="Open / Close Camera" onclick="toggleCamera()">📹</button>
+        <label class="upload-lbl" for="fileInput">📤 Upload Photo</label>
+        <input type="file" id="fileInput" accept="image/*">
+        <button class="cc main-btn" title="Capture frame" onclick="captureFrame()">📸</button>
+        <button class="cc" title="Before / After Slider" onclick="toggleBA()" style="font-size:.85rem;">↔️</button>
+        <button class="cc" title="Download" onclick="downloadLook()">⬇</button>
+        <button class="cc" title="Reset" onclick="resetAll()" style="font-size:.85rem;color:rgba(232,224,213,.5);">✕</button>
+      </div>
+
+      <div class="ai-tip-bar" id="aiTip"><strong>AI Tip:</strong> Upload a photo facing forward for the best hairstyle preview</div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="s-right">
+      <div>
+        <div class="r-lbl">Hair Color</div>
+        <div class="color-row">
+          <div class="csw active" style="background:#0d0d0d;" data-color="#0d0d0d" onclick="setColor(this)" title="Jet Black"></div>
+          <div class="csw" style="background:#3d1c02;" data-color="#3d1c02" onclick="setColor(this)" title="Dark Brown"></div>
+          <div class="csw" style="background:#6b3a1f;" data-color="#6b3a1f" onclick="setColor(this)" title="Medium Brown"></div>
+          <div class="csw" style="background:#c17f3c;" data-color="#c17f3c" onclick="setColor(this)" title="Golden Brown"></div>
+          <div class="csw" style="background:#d4a853;" data-color="#d4a853" onclick="setColor(this)" title="Blonde"></div>
+          <div class="csw" style="background:#e8e0d5;border:1px solid rgba(255,255,255,.2);" data-color="#e8e0d5" onclick="setColor(this)" title="Platinum"></div>
+          <div class="csw" style="background:#8b0000;" data-color="#8b0000" onclick="setColor(this)" title="Deep Red"></div>
+          <div class="csw" style="background:#4a1970;" data-color="#4a1970" onclick="setColor(this)" title="Purple"></div>
+          <div class="csw" style="background:#1a4a8a;" data-color="#1a4a8a" onclick="setColor(this)" title="Blue"></div>
+          <div class="csw" style="background:#2d7a4a;" data-color="#2d7a4a" onclick="setColor(this)" title="Green"></div>
+          <div class="csw" style="background:#888;" data-color="#888888" onclick="setColor(this)" title="Silver/Grey"></div>
+          <div class="csw" style="background:#c8923a;" data-color="#c8923a" onclick="setColor(this)" title="Caramel"></div>
+        </div>
+      </div>
+      <div>
+        <div class="r-lbl">Overlay Intensity</div>
+        <div class="int-row"><span>Light</span><input type="range" id="intensitySlider" min="15" max="95" value="65" oninput="updateIntensity(this.value)"><span>Bold</span></div>
+      </div>
+      <div>
+        <div class="r-lbl">Effects</div>
+        <div class="fx-grid">
+          <button class="fx-btn active" onclick="toggleFX(this,'shadow')">Shadow</button>
+          <button class="fx-btn" onclick="toggleFX(this,'highlight')">Highlight</button>
+          <button class="fx-btn" onclick="toggleFX(this,'gradient')">Gradient</button>
+          <button class="fx-btn" onclick="toggleFX(this,'shine')">Shine</button>
+        </div>
+      </div>
+      <div>
+        <div class="r-lbl">Save & Share</div>
+        <div class="ss-row">
+          <button class="ss-btn" onclick="downloadLook()">⬇ Save</button>
+          <button class="ss-btn" onclick="shareWA()">💬 Share</button>
+        </div>
+      </div>
+      <div class="book-box">
+        <div class="book-box-title">Ready to Book?</div>
+        <div class="book-box-desc">Send this style preview to your barber and book instantly.</div>
+        <button class="book-box-btn" onclick="goTo('#booking')">Book This Style →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-tag">Style Gallery</div>
+  <div class="section-title">Browse 200+ Styles</div>
+  <p class="section-desc">Find your inspiration — then try it on in seconds.</p>
+  <div class="gallery-grid reveal">
+    <div class="g-card"><div class="g-thumb" style="background:linear-gradient(160deg,#1a1008,#0a0804);">💈<span class="g-tag">Trending</span></div><div class="g-info"><div class="g-name">High Fade</div><div class="g-meta"><span>Men's · Classic</span><button class="g-try" onclick="tryGallery('fade')">Try On →</button></div></div></div>
+    <div class="g-card"><div class="g-thumb" style="background:linear-gradient(160deg,#0d1018,#080a12);">🌊<span class="g-tag">Popular</span></div><div class="g-info"><div class="g-name">Beach Waves</div><div class="g-meta"><span>Women's · Casual</span><button class="g-try" onclick="tryGallery('waves')">Try On →</button></div></div></div>
+    <div class="g-card"><div class="g-thumb" style="background:linear-gradient(160deg,#101518,#080d10);">⚡<span class="g-tag">Modern</span></div><div class="g-info"><div class="g-name">Textured Quiff</div><div class="g-meta"><span>Men's · Modern</span><button class="g-try" onclick="tryGallery('quiff')">Try On →</button></div></div></div>
+    <div class="g-card"><div class="g-thumb" style="background:linear-gradient(160deg,#181008,#100a04);">✂️<span class="g-tag">Bold</span></div><div class="g-info"><div class="g-name">Pixie Cut</div><div class="g-meta"><span>Women's · Bold</span><button class="g-try" onclick="tryGallery('pixie')">Try On →</button></div></div></div>
+    <div class="g-card"><div class="g-thumb" style="background:linear-gradient(160deg,#150d18,#0d0810);">🎩<span class="g-tag">Classic</span></div><div class="g-info"><div class="g-name">Pompadour</div><div class="g-meta"><span>Men's · Retro</span><button class="g-try" onclick="tryGallery('pompadour')">Try On →</button></div></div></div>
+    <div class="g-card"><div class="g-thumb" style="background:linear-gradient(160deg,#0a1510,#050d08);">🌿<span class="g-tag">Elegant</span></div><div class="g-info"><div class="g-name">Layered Long</div><div class="g-meta"><span>Women's · Elegant</span><button class="g-try" onclick="tryGallery('layered')">Try On →</button></div></div></div>
+    <div class="g-card"><div class="g-thumb" style="background:linear-gradient(160deg,#151510,#0d0d08);">📐<span class="g-tag">Sharp</span></div><div class="g-info"><div class="g-name">Bob Cut</div><div class="g-meta"><span>Women's · Sharp</span><button class="g-try" onclick="tryGallery('bob')">Try On →</button></div></div></div>
+    <div class="g-card"><div class="g-thumb" style="background:linear-gradient(160deg,#181808,#100f04);">🪒<span class="g-tag">Clean</span></div><div class="g-info"><div class="g-name">Buzz Cut</div><div class="g-meta"><span>Men's · Minimal</span><button class="g-try" onclick="tryGallery('buzz')">Try On →</button></div></div></div>
+  </div>
+  <div style="text-align:center;margin-top:3rem;"><a href="#" class="btn-secondary">View All 200+ Styles</a></div>
+</section>
+
+<!-- BOOKING -->
+<section class="booking" id="booking">
+  <div class="section-tag">Book Now</div>
+  <div class="section-title">Reserve Your Appointment</div>
+  <p class="section-desc">Select a stylist, pick your time, and confirm — all under 2 minutes.</p>
+  <div class="booking-grid">
+    <div>
+      <p style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:1rem;">Choose Your Stylist</p>
+      <div class="stylist-row reveal">
+        <div class="stylist-card active" onclick="pickStyled(this,'Arjun S.','₹450')"><div class="sav">💇</div><div class="s-name">Arjun S.</div><div class="s-spec">Fades & Tapers</div><div class="s-rating">★★★★★ 4.9</div></div>
+        <div class="stylist-card" onclick="pickStyled(this,'Priya M.','₹650')"><div class="sav">💈</div><div class="s-name">Priya M.</div><div class="s-spec">Color Expert</div><div class="s-rating">★★★★★ 4.8</div></div>
+        <div class="stylist-card" onclick="pickStyled(this,'Kiran T.','₹500')"><div class="sav">✂️</div><div class="s-name">Kiran T.</div><div class="s-spec">Women's Cuts</div><div class="s-rating">★★★★☆ 4.7</div></div>
+      </div>
+      <p style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:1rem;">Available Slots — Today</p>
+      <div class="slots reveal" style="transition-delay:.1s">
+        <div class="slot" onclick="pickSlot(this)">9:00 AM</div>
+        <div class="slot" onclick="pickSlot(this)">9:30 AM</div>
+        <div class="slot active" onclick="pickSlot(this)">10:00 AM</div>
+        <div class="slot" onclick="pickSlot(this)">10:30 AM</div>
+        <div class="slot" onclick="pickSlot(this)">11:00 AM</div>
+        <div class="slot taken">11:30 AM</div>
+        <div class="slot" onclick="pickSlot(this)">12:00 PM</div>
+        <div class="slot" onclick="pickSlot(this)">2:00 PM</div>
+        <div class="slot taken">3:00 PM</div>
+        <div class="slot" onclick="pickSlot(this)">4:00 PM</div>
+        <div class="slot" onclick="pickSlot(this)">5:00 PM</div>
+        <div class="slot" onclick="pickSlot(this)">5:30 PM</div>
+      </div>
+    </div>
+    <div>
+      <div class="bsummary reveal" id="bsummary">
+        <div class="bs-t">Booking Summary</div>
+        <div class="bs-r"><span class="bs-lbl">Style</span><span id="bs-style">Fade Cut</span></div>
+        <div class="bs-r"><span class="bs-lbl">Stylist</span><span id="bs-stylist">Arjun S.</span></div>
+        <div class="bs-r"><span class="bs-lbl">Date</span><span>Today</span></div>
+        <div class="bs-r"><span class="bs-lbl">Time</span><span id="bs-time">10:00 AM</span></div>
+        <div class="bs-r"><span class="bs-lbl">Duration</span><span>45 min</span></div>
+        <div class="bs-r bs-total"><span>Total</span><span class="bs-price" id="bs-price">₹450</span></div>
+        <button class="confirm-btn" onclick="confirmBooking()">Confirm & Pay →</button>
+        <p style="font-size:.72rem;color:var(--muted);text-align:center;margin-top:1rem;">Free cancellation up to 2 hours before</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-tag">Reviews</div>
+  <div class="section-title">What Clients Say</div>
+  <div class="testi-grid">
+    <div class="t-card reveal"><div class="t-stars">★★★★★</div><div class="t-text">"I uploaded my photo, tried 6 different fades, and walked in knowing exactly what I wanted. My barber was impressed — best cut I've ever had."</div><div class="t-author"><div class="t-avatar">👨</div><div><div class="t-name">Rahul K.</div><div class="t-meta">Regular Client · Chennai</div></div></div></div>
+    <div class="t-card reveal" style="transition-delay:.1s"><div class="t-stars">★★★★★</div><div class="t-text">"The color try-on is incredible. I tested 8 shades before choosing caramel highlights. The before/after slider sold me completely."</div><div class="t-author"><div class="t-avatar">👩</div><div><div class="t-name">Meena R.</div><div class="t-meta">Premium Member · Coimbatore</div></div></div></div>
+    <div class="t-card reveal" style="transition-delay:.2s"><div class="t-stars">★★★★★</div><div class="t-text">"As a stylist, this eliminated miscommunication 100%. Clients arrive with their preview and we're aligned from minute one."</div><div class="t-author"><div class="t-avatar">💈</div><div><div class="t-name">Venkat S.</div><div class="t-meta">Senior Stylist · Partner Salon</div></div></div></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec">
+  <div class="section-tag" style="display:block;text-align:center;padding-left:0;">Get Started</div>
+  <div class="section-title reveal" style="max-width:700px;margin:1rem auto 1.5rem;">Your Best Haircut<br><em style="font-style:normal;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Starts Here</em></div>
+  <p class="section-desc reveal" style="margin:0 auto 3rem;text-align:center;">Try any style on your own photo for free — no account needed.</p>
+  <div class="reveal" style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+    <button class="btn-primary" onclick="goTo('#studio')">🪄 Try Your Style Free</button>
+    <button class="btn-secondary" onclick="goTo('#booking')">Book an Appointment</button>
+    <button class="btn-secondary" onclick="openDeploy()">🚀 Deploy This Site</button>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo">SHEAR<span>.AI</span></div>
+  <div class="f-links"><a href="#">About</a><a href="#">For Salons</a><a href="#">Privacy</a><a href="#" onclick="openDeploy();return false;">Deploy</a></div>
+  <div class="f-copy">© 2026 SHEAR.AI</div>
+</footer>
+
+<script>
+/* ====== CURSOR ====== */
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function tick(){cur.style.left=mx+'px';cur.style.top=my+'px';rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(tick);})();
+document.querySelectorAll('a,button,.g-card,.t-card,.slot,.stylist-card,.csw,.fx-btn,.ss-btn,.style-btn,.g-try,.upload-lbl').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='18px';cur.style.height='18px';ring.style.width='54px';ring.style.height='54px';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';ring.style.width='38px';ring.style.height='38px';});
+});
+
+/* ====== HELPERS ====== */
+function goTo(sel){document.querySelector(sel)?.scrollIntoView({behavior:'smooth'});}
+function toast(msg,dur=3200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),dur);}
+
+/* ====== DEPLOY MODAL ====== */
+function openDeploy(){document.getElementById('deployModal').classList.add('open');}
+document.getElementById('dClose').addEventListener('click',()=>document.getElementById('deployModal').classList.remove('open'));
+document.getElementById('deployModal').addEventListener('click',e=>{if(e.target.id==='deployModal')document.getElementById('deployModal').classList.remove('open');});
+
+/* ====== CANVAS SYSTEM ====== */
+const photoCanvas=document.getElementById('photoCanvas');
+const overlayCanvas=document.getElementById('overlayCanvas');
+const baCanvas=document.getElementById('baCanvas');
+const pCtx=photoCanvas.getContext('2d');
+const oCtx=overlayCanvas.getContext('2d');
+const baCtx=baCanvas.getContext('2d');
+
+let loadedImage=null;      // HTMLImageElement or null
+let videoEl=null;          // live video element
+let cameraStream=null;
+let camRAF=null;
+let currentStyle='fade';
+let currentColor='#0d0d0d';
+let currentBeard=null;
+let intensity=65;
+let activeFX=['shadow'];
+let baOpen=false;
+let baSplit=50;
+
+function syncCanvasSize(){
+  const wrap=document.querySelector('.canvas-wrap');
+  const w=wrap.clientWidth, h=wrap.clientHeight;
+  [photoCanvas,overlayCanvas,baCanvas].forEach(c=>{c.width=w;c.height=h;});
+}
+
+/* ====== DRAW PHOTO ====== */
+function drawPhoto(src){
+  // src = Image or canvas or video element
+  const w=photoCanvas.width, h=photoCanvas.height;
+  pCtx.clearRect(0,0,w,h);
+  const sw=src.videoWidth||src.naturalWidth||src.width;
+  const sh=src.videoHeight||src.naturalHeight||src.height;
+  const imgAR=sw/sh, canAR=w/h;
+  let sx=0,sy=0,ssw=sw,ssh=sh;
+  if(imgAR>canAR){ssw=sh*canAR;sx=(sw-ssw)/2;}
+  else{ssh=sw/canAR;sy=(sh-ssh)/2;}
+  pCtx.drawImage(src,sx,sy,ssw,ssh,0,0,w,h);
+}
+
+/* ====== STYLE DEFINITIONS ====== */
+const STYLES={
+  fade:{
+    shapes:[
+      {type:'ellipse',x:.5,y:.18,rx:.44,ry:.20},
+    ],
+    sideShave:true
+  },
+  quiff:{
+    shapes:[
+      {type:'ellipse',x:.5,y:.12,rx:.40,ry:.25},
+      {type:'ellipse',x:.5,y:.07,rx:.28,ry:.15}
+    ]
+  },
+  buzz:{
+    shapes:[{type:'ellipse',x:.5,y:.17,rx:.45,ry:.14}]
+  },
+  undercut:{
+    shapes:[{type:'ellipse',x:.5,y:.14,rx:.42,ry:.22}],
+    sides:[{x:.05,y:.12,w:.13,h:.3},{x:.82,y:.12,w:.13,h:.3}]
+  },
+  pompadour:{
+    shapes:[
+      {type:'ellipse',x:.5,y:.08,rx:.36,ry:.22},
+      {type:'ellipse',x:.5,y:.15,rx:.42,ry:.16}
+    ]
+  },
+  bob:{
+    shapes:[{type:'ellipse',x:.5,y:.16,rx:.46,ry:.18}],
+    sides:[{x:.02,y:.14,w:.14,h:.42},{x:.84,y:.14,w:.14,h:.42}]
+  },
+  waves:{
+    shapes:[{type:'ellipse',x:.5,y:.15,rx:.47,ry:.18}],
+    sides:[{x:.01,y:.12,w:.14,h:.55},{x:.85,y:.12,w:.14,h:.55}]
+  },
+  pixie:{
+    shapes:[{type:'ellipse',x:.5,y:.17,rx:.46,ry:.14}]
+  },
+  layered:{
+    shapes:[{type:'ellipse',x:.5,y:.15,rx:.47,ry:.18}],
+    sides:[{x:.0,y:.1,w:.13,h:.65},{x:.87,y:.1,w:.13,h:.65}]
+  }
+};
+
+/* ====== DRAW OVERLAY ====== */
+function drawOverlay(){
+  if(!loadedImage&&!videoEl) return;
+  const w=overlayCanvas.width, h=overlayCanvas.height;
+  oCtx.clearRect(0,0,w,h);
+  const def=STYLES[currentStyle]||STYLES.fade;
+  const alpha=intensity/100;
+  const col=currentColor;
+
+  oCtx.save();
+
+  // Helper: fill ellipse with gradient
+  function fillShape(shape,a){
+    const cx=shape.x*w, cy=shape.y*h;
+    const rX=shape.rx*w, rY=shape.ry*h;
+    oCtx.beginPath();
+    oCtx.ellipse(cx,cy,rX,rY,0,0,Math.PI*2);
+    const grd=oCtx.createLinearGradient(cx-rX,cy-rY,cx+rX,cy+rY);
+    const c2=shiftColor(col,.3), c3=shiftColor(col,-.25);
+    if(activeFX.includes('gradient')){
+      grd.addColorStop(0,hexA(c2,a*.9));
+      grd.addColorStop(.5,hexA(col,a));
+      grd.addColorStop(1,hexA(c3,a*.75));
+    } else {
+      grd.addColorStop(0,hexA(col,a*.9));
+      grd.addColorStop(1,hexA(col,a));
+    }
+    oCtx.fillStyle=grd;
+    if(activeFX.includes('shadow')){
+      oCtx.shadowColor='rgba(0,0,0,.55)';
+      oCtx.shadowBlur=14;
+    }
+    oCtx.fill();
+    oCtx.shadowColor='transparent';oCtx.shadowBlur=0;
+  }
+
+  def.shapes.forEach(s=>fillShape(s,alpha));
+
+  // Side sections (bob, waves, layered, undercut)
+  if(def.sides){
+    def.sides.forEach(r=>{
+      const grd=oCtx.createLinearGradient(0,r.y*h,0,(r.y+r.h)*h);
+      const c3=shiftColor(col,-.2);
+      grd.addColorStop(0,hexA(col,alpha*.75));
+      grd.addColorStop(1,hexA(c3,alpha*.45));
+      oCtx.fillStyle=grd;
+      oCtx.beginPath();
+      oCtx.roundRect(r.x*w,r.y*h,r.w*w,r.h*h,8);
+      oCtx.fill();
+    });
+  }
+
+  // Highlight
+  if(activeFX.includes('highlight')){
+    const hl=oCtx.createRadialGradient(w*.38,h*.08,0,w*.38,h*.08,w*.3);
+    hl.addColorStop(0,hexA(shiftColor(col,.55),.32));
+    hl.addColorStop(1,'rgba(0,0,0,0)');
+    oCtx.fillStyle=hl;
+    oCtx.fillRect(0,0,w,h);
+  }
+
+  // Shine
+  if(activeFX.includes('shine')&&def.shapes[0]){
+    const s=def.shapes[0];
+    oCtx.beginPath();
+    oCtx.ellipse(s.x*w,s.y*h,s.rx*w,s.ry*h,0,0,Math.PI*2);
+    const sh=oCtx.createLinearGradient(s.x*w-s.rx*w,s.y*h-s.ry*h,s.x*w,s.y*h);
+    sh.addColorStop(0,'rgba(255,255,255,.22)');sh.addColorStop(.7,'rgba(255,255,255,.06)');sh.addColorStop(1,'rgba(255,255,255,0)');
+    oCtx.fillStyle=sh;oCtx.fill();
+  }
+
+  // Beard
+  if(currentBeard&&currentBeard!=='none'){
+    const ba=currentBeard==='full'?alpha*.68:alpha*.42;
+    const bGrd=oCtx.createLinearGradient(0,h*.56,0,h*.82);
+    bGrd.addColorStop(0,hexA(col,ba));bGrd.addColorStop(1,hexA(shiftColor(col,-.2),ba*.6));
+    oCtx.fillStyle=bGrd;
+    oCtx.beginPath();
+    oCtx.ellipse(w*.5,currentBeard==='full'?h*.72:h*.67,w*(currentBeard==='full'?.26:.20),h*(currentBeard==='full'?.15:.07),0,0,Math.PI*2);
+    oCtx.fill();
+  }
+
+  oCtx.restore();
+}
+
+/* ====== COLOR UTILS ====== */
+function hexA(hex,a){
+  hex=hex.replace('#','');
+  if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.substring(0,2),16)||0;
+  const g=parseInt(hex.substring(2,4),16)||0;
+  const b=parseInt(hex.substring(4,6),16)||0;
+  return `rgba(${r},${g},${b},${Math.min(1,Math.max(0,a))})`;
+}
+function shiftColor(hex,amt){
+  hex=hex.replace('#','');
+  if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+  const r=Math.min(255,Math.max(0,parseInt(hex.substring(0,2),16)+Math.round(amt*200)));
+  const g=Math.min(255,Math.max(0,parseInt(hex.substring(2,4),16)+Math.round(amt*180)));
+  const b=Math.min(255,Math.max(0,parseInt(hex.substring(4,6),16)+Math.round(amt*160)));
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+/* ====== LOAD IMAGE FILE ====== */
+function loadFile(file){
+  if(!file||!file.type.startsWith('image/')){toast('⚠️ Please choose a JPG, PNG, or WEBP image');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    stopCamera();
+    const img=new Image();
+    img.onload=()=>{
+      loadedImage=img;
+      syncCanvasSize();
+      document.getElementById('placeholder').style.display='none';
+      document.getElementById('scanLine').style.display='block';
+      setTimeout(()=>{document.getElementById('scanLine').style.display='none';},2000);
+      drawPhoto(img);
+      drawOverlay();
+      toast('✅ Photo loaded! Now select a hairstyle from the sidebar');
+      document.getElementById('aiTip').innerHTML='<strong>AI Tip:</strong> '+styleTips[currentStyle];
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('fileInput').addEventListener('change',function(){loadFile(this.files[0]);this.value='';});
+
+// Drag & drop onto canvas area
+const cw=document.querySelector('.canvas-wrap');
+cw.addEventListener('dragover',e=>{e.preventDefault();cw.style.borderColor='var(--gold)';});
+cw.addEventListener('dragleave',()=>{cw.style.borderColor='';});
+cw.addEventListener('drop',e=>{e.preventDefault();cw.style.borderColor='';loadFile(e.dataTransfer.files[0]);});
+
+/* ====== CAMERA ====== */
+async function toggleCamera(){
+  if(cameraStream){stopCamera();toast('📷 Camera closed');return;}
+  try{
+    cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720}}});
+    videoEl=document.createElement('video');
+    videoEl.srcObject=cameraStream;
+    videoEl.playsInline=true;
+    await videoEl.play();
+    loadedImage=null;
+    document.getElementById('placeholder').style.display='none';
+    document.getElementById('scanLine').style.display='block';
+    syncCanvasSize();
+    function liveDraw(){
+      if(!cameraStream){return;}
+      camRAF=requestAnimationFrame(liveDraw);
+      drawPhoto(videoEl);
+      drawOverlay();
+    }
+    liveDraw();
+    toast('📹 Camera open — move around to preview styles live!');
+  }catch(err){
+    toast('⚠️ Camera blocked. Please allow camera access in your browser settings.');
+    console.error(err);
+  }
+}
+
+function stopCamera(){
+  if(camRAF){cancelAnimationFrame(camRAF);camRAF=null;}
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+  if(videoEl){videoEl.srcObject=null;videoEl=null;}
+  document.getElementById('scanLine').style.display='none';
+}
+
+function captureFrame(){
+  if(videoEl){
+    // Freeze current frame as static image
+    const tmp=document.createElement('canvas');
+    tmp.width=photoCanvas.width;tmp.height=photoCanvas.height;
+    tmp.getContext('2d').drawImage(photoCanvas,0,0);
+    stopCamera();
+    const img=new Image();
+    img.onload=()=>{loadedImage=img;drawPhoto(img);drawOverlay();toast('📸 Frame captured!');};
+    img.src=tmp.toDataURL();
+  } else if(!loadedImage){
+    toast('📸 Open camera first, then capture — or upload a photo');
+  }
+}
+
+/* ====== STYLE / COLOR / FX ====== */
+const styleTips={
+  fade:'High Fade — works great on oval & square faces',
+  quiff:'Textured Quiff — adds height to round faces',
+  buzz:'Buzz Cut — clean, low-maintenance, suits most faces',
+  undercut:'Undercut — sharp contrast, great on angular faces',
+  pompadour:'Pompadour — classic volume on top, timeless look',
+  bob:'Bob Cut — sharp lines, frame the face beautifully',
+  waves:'Beach Waves — casual and effortless movement',
+  pixie:'Pixie Cut — bold, confident, draws attention to your eyes',
+  layered:'Layered Long — adds body and movement to thick or thin hair'
+};
+
+function applyStyle(btn){
+  document.querySelectorAll('[data-style]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentStyle=btn.dataset.style;
+  document.getElementById('bs-style').textContent=btn.textContent.trim();
+  if(loadedImage||videoEl){drawOverlay();}
+  else toast('📸 Upload or open your camera first, then pick a style!');
+  document.getElementById('aiTip').innerHTML='<strong>AI Tip:</strong> '+(styleTips[currentStyle]||'Looking great!');
+}
+
+function applyBeard(btn){
+  document.querySelectorAll('[data-beard]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentBeard=btn.dataset.beard;
+  if(loadedImage||videoEl) drawOverlay();
+  else toast('📸 Upload a photo first!');
+}
+
+function setColor(el){
+  document.querySelectorAll('.csw').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  currentColor=el.dataset.color;
+  if(loadedImage||videoEl) drawOverlay();
+}
+
+function updateIntensity(v){
+  intensity=parseInt(v);
+  if(loadedImage||videoEl) drawOverlay();
+}
+
+function toggleFX(btn,fx){
+  btn.classList.toggle('active');
+  const i=activeFX.indexOf(fx);
+  if(i>-1) activeFX.splice(i,1); else activeFX.push(fx);
+  if(loadedImage||videoEl) drawOverlay();
+}
+
+/* ====== BEFORE/AFTER ====== */
+function toggleBA(){
+  if(!loadedImage&&!videoEl){toast('📸 Upload a photo first to use Before/After!');return;}
+  baOpen=!baOpen;
+  document.getElementById('normalView').style.display=baOpen?'none':'block';
+  document.getElementById('baView').classList.toggle('show',baOpen);
+  if(baOpen){syncBaSize();drawBA();setupBADrag();}
+}
+
+function syncBaSize(){
+  const ww=document.querySelector('.canvas-wrap').clientWidth;
+  const hh=document.querySelector('.canvas-wrap').clientHeight;
+  baCanvas.width=ww;baCanvas.height=hh;
+}
+
+function drawBA(){
+  if(!loadedImage&&!videoEl) return;
+  const w=baCanvas.width,h=baCanvas.height;
+  const src=videoEl||loadedImage;
+  const sw=src.videoWidth||src.naturalWidth||w;
+  const sh=src.videoHeight||src.naturalHeight||h;
+  const imgAR=sw/sh,canAR=w/h;
+  let sx=0,sy=0,ssw=sw,ssh=sh;
+  if(imgAR>canAR){ssw=sh*canAR;sx=(sw-ssw)/2;}
+  else{ssh=sw/canAR;sy=(sh-ssh)/2;}
+  const split=baSplit/100*w;
+  baCtx.clearRect(0,0,w,h);
+  // LEFT: original
+  baCtx.save();baCtx.beginPath();baCtx.rect(0,0,split,h);baCtx.clip();
+  baCtx.drawImage(src,sx,sy,ssw,ssh,0,0,w,h);
+  baCtx.restore();
+  // RIGHT: with overlay
+  baCtx.save();baCtx.beginPath();baCtx.rect(split,0,w-split,h);baCtx.clip();
+  baCtx.drawImage(src,sx,sy,ssw,ssh,0,0,w,h);
+  baCtx.drawImage(overlayCanvas,0,0,w,h);
+  baCtx.restore();
+  // Divider
+  baCtx.beginPath();baCtx.moveTo(split,0);baCtx.lineTo(split,h);
+  baCtx.strokeStyle=currentColor||'#d4a853';baCtx.lineWidth=2;baCtx.stroke();
+  document.getElementById('baHandle').style.left=baSplit+'%';
+}
+
+function setupBADrag(){
+  const handle=document.getElementById('baHandle');
+  const wrap=document.getElementById('baView');
+  let dragging=false;
+  function onMove(e){
+    if(!dragging) return;
+    const rect=wrap.getBoundingClientRect();
+    const cx=e.touches?e.touches[0].clientX:e.clientX;
+    baSplit=Math.max(5,Math.min(95,(cx-rect.left)/rect.width*100));
+    drawBA();
+  }
+  function onUp(){dragging=false;}
+  handle.addEventListener('mousedown',()=>{dragging=true;});
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
+  handle.addEventListener('touchstart',()=>{dragging=true;},{passive:true});
+  document.addEventListener('touchmove',e=>{if(dragging)onMove(e);},{passive:true});
+  document.addEventListener('touchend',onUp);
+  wrap.addEventListener('click',e=>{
+    const rect=wrap.getBoundingClientRect();
+    baSplit=Math.max(5,Math.min(95,(e.clientX-rect.left)/rect.width*100));
+    drawBA();
+  });
+}
+
+/* ====== DOWNLOAD ====== */
+function downloadLook(){
+  if(!loadedImage&&!videoEl){toast('📸 Upload a photo first!');return;}
+  const merged=document.createElement('canvas');
+  merged.width=photoCanvas.width;merged.height=photoCanvas.height;
+  const mc=merged.getContext('2d');
+  mc.drawImage(photoCanvas,0,0);
+  mc.drawImage(overlayCanvas,0,0);
+  const a=document.createElement('a');
+  a.download='shear-ai-my-style.png';
+  a.href=merged.toDataURL('image/png');
+  a.click();
+  toast('⬇ Downloaded your styled photo!');
+}
+
+function shareWA(){
+  if(!loadedImage&&!videoEl){toast('📸 Upload a photo first!');return;}
+  const msg=encodeURIComponent('Check out my new hairstyle preview from SHEAR.AI! 💇✨ shear.ai');
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+/* ====== GALLERY TRY-ON ====== */
+function tryGallery(style){
+  const btn=document.querySelector(`[data-style="${style}"]`);
+  if(btn) applyStyle(btn);
+  goTo('#studio');
+  if(!loadedImage&&!videoEl) setTimeout(()=>toast('📸 Now upload your photo to preview the "'+style+'" style!'),700);
+}
+
+/* ====== RESET ====== */
+function resetAll(){
+  stopCamera();
+  loadedImage=null;
+  pCtx.clearRect(0,0,photoCanvas.width,photoCanvas.height);
+  oCtx.clearRect(0,0,overlayCanvas.width,overlayCanvas.height);
+  document.getElementById('placeholder').style.display='flex';
+  baOpen=false;
+  document.getElementById('normalView').style.display='block';
+  document.getElementById('baView').classList.remove('show');
+  toast('✕ Reset — ready for a new photo');
+}
+
+/* ====== BOOKING ====== */
+let bkStyled={name:'Arjun S.',price:'₹450'};
+function pickStyled(card,name,price){
+  document.querySelectorAll('.stylist-card').forEach(c=>c.classList.remove('active'));
+  card.classList.add('active');
+  document.getElementById('bs-stylist').textContent=name;
+  document.getElementById('bs-price').textContent=price;
+  bkStyled={name,price};
+}
+function pickSlot(el){
+  document.querySelectorAll('.slot').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('bs-time').textContent=el.textContent;
+}
+function confirmBooking(){
+  const id='#SA-'+Math.floor(Math.random()*9000+1000);
+  document.getElementById('bsummary').innerHTML=`<div style="text-align:center;padding:2rem 0;"><div style="font-size:3rem;margin-bottom:1rem;">✅</div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:.7rem;">Booking Confirmed!</div><div style="color:var(--muted);font-size:.9rem;line-height:1.6;margin-bottom:1.5rem;">Your appointment with ${bkStyled.name} is confirmed. Your style preview has been sent to your stylist!</div><div style="background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.2);border-radius:8px;padding:1rem;font-size:.82rem;color:var(--gold);">Booking ID: ${id}</div><button class="btn-secondary" style="margin-top:1.5rem;font-size:.8rem;" onclick="location.reload()">Book Another</button></div>`;
+  toast('🎉 Booking confirmed! ID: '+id);
+}
+
+/* ====== SCROLL REVEAL ====== */
+const revObs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('in-view'),i*70);});},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(r=>revObs.observe(r));
+
+/* ====== STATS COUNTER ====== */
+new IntersectionObserver(entries=>{
+  if(!entries[0].isIntersecting) return;
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const t=+el.dataset.target; let v=0; const step=t/60;
+    const iv=setInterval(()=>{v=Math.min(v+step,t);el.textContent=(t>=1000?Math.floor(v).toLocaleString():Math.floor(v))+(t>=1000?'+':(t<=100?'%':'+'));if(v>=t)clearInterval(iv);},18);
+  });
+},{threshold:.5}).observe(document.querySelector('.stats-bar'));
+
+/* ====== RESIZE ====== */
+window.addEventListener('resize',()=>{syncCanvasSize();if(loadedImage){drawPhoto(loadedImage);drawOverlay();}});
+syncCanvasSize();
+</script>
+</body>
+</html>
